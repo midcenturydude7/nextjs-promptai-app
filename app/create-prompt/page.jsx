@@ -5,9 +5,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import Form from "@components/Form";
-import { create } from "eslint-plugin-react/lib/rules/button-has-type";
 
 const CreatePrompt = () => {
+  const router = useRouter();
+  const { data: session } = useSession();
+
   const [submitting, setSubmitting] = React.useState(false);
   const [post, setPost] = React.useState({
     prompt: "",
@@ -15,7 +17,27 @@ const CreatePrompt = () => {
   });
 
   const createPrompt = async (e) => {
-    await fetch("/api/prompt", {});
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/prompt/new", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: post.prompt,
+          userId: session?.user.id,
+          tag: post.tag,
+        }),
+      });
+
+      if (res.ok) {
+        router.push("/");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
